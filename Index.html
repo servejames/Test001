@@ -1,0 +1,3459 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Silver Mile - 後台管理系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c757d;
+            --accent-color: #8a9a5b;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 60px;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 15px 20px;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
+            transition: margin-left 0.3s;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 101;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stats-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .stats-card .label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        /* 用戶狀態樣式 */
+        .user-status-alive {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .user-status-warning {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        .user-status-danger {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .user-status-deceased {
+            color: var(--dark-color);
+            font-weight: bold;
+        }
+        
+        /* 遺囑狀態樣式 */
+        .status-active {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .status-scheduled {
+            color: var(--info-color);
+            font-weight: bold;
+        }
+        
+        .status-legacy {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .status-expired {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .status-locked {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        /* 葬禮狀態樣式 */
+        .status-planning {
+            color: var(--info-color);
+            font-weight: bold;
+        }
+        
+        .status-arranging {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        .status-completed {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .status-canceled {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .status-ongoing {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        /* 遺產狀態樣式 */
+        .status-pending {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        .status-processing {
+            color: var(--info-color);
+            font-weight: bold;
+        }
+        
+        .status-delayed {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .status-legal {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        /* 遺囑執行狀態樣式 */
+        .status-draft {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .status-progress {
+            color: var(--info-color);
+            font-weight: bold;
+        }
+        
+        .status-waiting {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        /* 生命狀態樣式 */
+        .status-normal {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .action-btn {
+            margin-right: 5px;
+        }
+        
+        .capsule-card {
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        
+        .capsule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .capsule-type {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .media-item {
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            height: 120px;
+        }
+        
+        .media-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .media-item .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            border: 2px solid white;
+        }
+        
+        .timeline-date {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+        
+        .progress-container {
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .health-metric {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .metric-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .alert-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        
+        .risk-indicator {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .risk-level {
+            height: 100%;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin-bottom: 20px;
+        }
+        
+        .service-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        
+        .service-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .service-details {
+            flex-grow: 1;
+        }
+        
+        .service-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .service-status {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+        
+        .asset-type {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .asset-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .asset-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .badge-step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .document-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .document-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .document-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .guest-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .guest-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .guest-item:last-child {
+            border-bottom: none;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        /* 系統設定頁面專用樣式 */
+        .settings-card {
+            padding: 25px;
+        }
+        
+        .settings-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .settings-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .settings-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .status-online {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-offline {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        
+        .api-active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+        
+        .api-inactive {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+        }
+        
+        .permission-icon {
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+        
+        .backup-card {
+            border-left: 4px solid var(--info-color);
+        }
+        
+        .security-card {
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .integration-card {
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .log-entry {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+        
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 10px;
+        }
+        
+        /* 時光膠囊頁面專用樣式 */
+        .status-active {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .status-scheduled {
+            color: var(--info-color);
+            font-weight: bold;
+        }
+        
+        .status-legacy {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .status-expired {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .status-locked {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .access-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        
+        .memory-timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+        
+        .memory-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #dee2e6;
+        }
+        
+        .memory-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .memory-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            border: 2px solid white;
+        }
+        
+        .memory-date {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 250px;
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 103;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 102;
+            }
+            
+            .overlay.active {
+                display: block;
+            }
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 104;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+        
+        .insight-card {
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+        
+        .insight-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .data-table {
+            font-size: 0.9rem;
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.85rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 5px;
+        }
+        
+        .trend-up {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+        
+        .trend-down {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .trend-neutral {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .kpi-badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 側邊欄切換按鈕（移動設備） -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- 移動設備遮罩 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 頂部導航欄 -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-cloud-haze2"></i> Final Silver Mile 後台管理
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-bell"></i> 
+                            <span class="position-relative">
+                                通知
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    5
+                                </span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="bi bi-question-circle"></i> 幫助</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> 管理員
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">個人資料</a></li>
+                            <li><a class="dropdown-item" href="#">設定</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">登出</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 側邊欄 -->
+    <div class="sidebar col-lg-2 col-md-3 d-md-block" id="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-target="dashboard">
+                    <i class="bi bi-speedometer2"></i> 儀表板
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="user-management">
+                    <i class="bi bi-people"></i> 用戶管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="will-management">
+                    <i class="bi bi-file-text"></i> 遺囑管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="health-monitoring">
+                    <i class="bi bi-heart-pulse"></i> 生命狀態監測
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="will-execution">
+                    <i class="bi bi-shield-check"></i> 遺囑託管與執行
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="estate-management">
+                    <i class="bi bi-cash-coin"></i> 遺產與債務處理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="funeral-management">
+                    <i class="bi bi-flower1"></i> 葬禮管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="time-capsule">
+                    <i class="bi bi-cloud"></i> 時光膠囊管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="data-analysis">
+                    <i class="bi bi-graph-up"></i> 數據分析
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-target="system-settings">
+                    <i class="bi bi-gear"></i> 系統設定
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="main-content" id="mainContent">
+        <!-- 儀表板 -->
+        <div class="content-section active" id="dashboard">
+            <div class="container-fluid">
+                <h2 class="mb-4">系統概覽</h2>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">1,243</div>
+                            <div class="label">註冊用戶</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">有效遺囑</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">待處理事項</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">17</div>
+                            <div class="label">本週活動用戶</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 待處理事項 -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0"><i class="bi bi-exclamation-circle"></i> 緊急通知 - 需要確認的用戶狀態</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>用戶姓名</th>
+                                                <th>年齡</th>
+                                                <th>狀態</th>
+                                                <th>最後活動</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>張大明</td>
+                                                <td>72</td>
+                                                <td><span class="user-status-danger">高風險</span></td>
+                                                <td>3天前</td>
+                                                <td><button class="btn btn-sm btn-outline-primary">查看</button></td>
+                                            </tr>
+                                            <tr>
+                                                <td>李美麗</td>
+                                                <td>68</td>
+                                                <td><span class="user-status-warning">中風險</span></td>
+                                                <td>5天前</td>
+                                                <td><button class="btn btn-sm btn-outline-primary">查看</button></td>
+                                            </tr>
+                                            <tr>
+                                                <td>王國偉</td>
+                                                <td>75</td>
+                                                <td><span class="user-status-deceased">待確認死亡</span></td>
+                                                <td>14天前</td>
+                                                <td><button class="btn btn-sm btn-outline-primary">確認</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0"><i class="bi bi-list-check"></i> 待執行的遺囑任務</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>用戶姓名</th>
+                                                <th>確認日期</th>
+                                                <th>執行狀態</th>
+                                                <th>執行人</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>陳小春</td>
+                                                <td>2023-10-05</td>
+                                                <td><span class="badge bg-warning">待開始</span></td>
+                                                <td>張律師</td>
+                                                <td><button class="btn btn-sm btn-outline-primary">處理</button></td>
+                                            </tr>
+                                            <tr>
+                                                <td>林美華</td>
+                                                <td>2023-10-10</td>
+                                                <td><span class="badge bg-info">進行中</span></td>
+                                                <td>李律師</td>
+                                                <td><button class="btn btn-sm btn-outline-primary">查看</button></td>
+                                            </tr>
+                                            <tr>
+                                                <td>黃國昌</td>
+                                                <td>2023-10-12</td>
+                                                <td><span class="badge bg-secondary">待確認</span></td>
+                                                <td>-</td>
+                                                <td><button class="btn btn-sm btn-outline-primary">指派</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 近期活動 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="bi bi-clock-history"></i> 近期用戶活動</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>用戶姓名</th>
+                                                <th>活動類型</th>
+                                                <th>詳細資訊</th>
+                                                <th>時間</th>
+                                                <th>狀態</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>劉德華</td>
+                                                <td>遺囑修改</td>
+                                                <td>更新了財產分配條款</td>
+                                                <td>2023-10-15 14:30</td>
+                                                <td><span class="user-status-alive">正常</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>趙自強</td>
+                                                <td>AI互動檢測</td>
+                                                <td>完成健康狀況問卷</td>
+                                                <td>2023-10-15 13:15</td>
+                                                <td><span class="user-status-warning">需關注</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>錢小慧</td>
+                                                <td>時光膠囊</td>
+                                                <td>上傳了5個新影片</td>
+                                                <td>2023-10-15 10:45</td>
+                                                <td><span class="user-status-alive">正常</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>孫越</td>
+                                                <td>葬禮規劃</td>
+                                                <td>預訂了基本葬禮服務</td>
+                                                <td>2023-10-14 16:20</td>
+                                                <td><span class="user-status-danger">高風險</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用戶管理 -->
+        <div class="content-section" id="user-management">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-people"></i> 用戶管理</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="bi bi-plus-circle"></i> 新增用戶
+                    </button>
+                </div>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">1,243</div>
+                            <div class="label">總用戶數</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">活躍用戶</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">高風險用戶</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">17</div>
+                            <div class="label">本週新增用戶</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 篩選區域 -->
+                <div class="filter-section">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="searchInput" class="form-label">搜尋用戶</label>
+                                <input type="text" class="form-control" id="searchInput" placeholder="姓名、電話或電子郵件">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="statusFilter" class="form-label">狀態篩選</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">所有狀態</option>
+                                    <option value="active">活躍</option>
+                                    <option value="inactive">不活躍</option>
+                                    <option value="highRisk">高風險</option>
+                                    <option value="deceased">已故</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="ageFilter" class="form-label">年齡範圍</label>
+                                <select class="form-select" id="ageFilter">
+                                    <option value="">所有年齡</option>
+                                    <option value="50-60">50-60歲</option>
+                                    <option value="61-70">61-70歲</option>
+                                    <option value="71-80">71-80歲</option>
+                                    <option value="81+">81歲以上</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary"><i class="bi bi-filter"></i> 應用篩選</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用戶列表 -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>用戶</th>
+                                        <th>年齡</th>
+                                        <th>聯絡方式</th>
+                                        <th>狀態</th>
+                                        <th>最後活動</th>
+                                        <th>遺囑狀態</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="張大明">
+                                                <div>
+                                                    <div>張大明</div>
+                                                    <small class="text-muted">ID: U10001</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>72</td>
+                                        <td>
+                                            <div>0921-123-456</div>
+                                            <small class="text-muted">daming@example.com</small>
+                                        </td>
+                                        <td><span class="user-status-danger">高風險</span></td>
+                                        <td>3天前</td>
+                                        <td><span class="badge bg-success">已完成</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger action-btn" title="刪除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="李美麗">
+                                                <div>
+                                                    <div>李美麗</div>
+                                                    <small class="text-muted">ID: U10002</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>68</td>
+                                        <td>
+                                            <div>0933-456-789</div>
+                                            <small class="text-muted">meili@example.com</small>
+                                        </td>
+                                        <td><span class="user-status-warning">中風險</span></td>
+                                        <td>5天前</td>
+                                        <td><span class="badge bg-warning">草稿</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger action-btn" title="刪除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="王國偉">
+                                                <div>
+                                                    <div>王國偉</div>
+                                                    <small class="text-muted">ID: U10003</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>75</td>
+                                        <td>
+                                            <div>0910-987-654</div>
+                                            <small class="text-muted">guowei@example.com</small>
+                                        </td>
+                                        <td><span class="user-status-deceased">已故</span></td>
+                                        <td>2023-09-20</td>
+                                        <td><span class="badge bg-success">已執行</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info action-btn" title="遺囑執行">
+                                                <i class="bi bi-shield-check"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="陳小春">
+                                                <div>
+                                                    <div>陳小春</div>
+                                                    <small class="text-muted">ID: U10004</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>65</td>
+                                        <td>
+                                            <div>0955-111-222</div>
+                                            <small class="text-muted">xiaochun@example.com</small>
+                                        </td>
+                                        <td><span class="user-status-alive">正常</span></td>
+                                        <td>今天 09:30</td>
+                                        <td><span class="badge bg-success">已完成</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger action-btn" title="刪除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="林美華">
+                                                <div>
+                                                    <div>林美華</div>
+                                                    <small class="text-muted">ID: U10005</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>70</td>
+                                        <td>
+                                            <div>0988-333-444</div>
+                                            <small class="text-muted">meihua@example.com</small>
+                                        </td>
+                                        <td><span class="user-status-alive">正常</span></td>
+                                        <td>2天前</td>
+                                        <td><span class="badge bg-secondary">未開始</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger action-btn" title="刪除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 分頁 -->
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mt-4">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">上一頁</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">下一頁</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遺囑管理 -->
+        <div class="content-section" id="will-management">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-file-text"></i> 遺囑管理</h2>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 新增遺囑
+                    </button>
+                </div>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">有效遺囑</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">127</div>
+                            <div class="label">草稿狀態</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">待審核</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">15</div>
+                            <div class="label">本週新增</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 篩選區域 -->
+                <div class="filter-section">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="willSearch" class="form-label">搜尋遺囑</label>
+                                <input type="text" class="form-control" id="willSearch" placeholder="用戶姓名或遺囑ID">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="willStatusFilter" class="form-label">狀態篩選</label>
+                                <select class="form-select" id="willStatusFilter">
+                                    <option value="">所有狀態</option>
+                                    <option value="active">有效</option>
+                                    <option value="draft">草稿</option>
+                                    <option value="scheduled">預定生效</option>
+                                    <option value="legacy">已繼承</option>
+                                    <option value="expired">已過期</option>
+                                    <option value="locked">鎖定</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="willDateFilter" class="form-label">創建日期</label>
+                                <select class="form-select" id="willDateFilter">
+                                    <option value="">所有日期</option>
+                                    <option value="today">今天</option>
+                                    <option value="week">本週</option>
+                                    <option value="month">本月</option>
+                                    <option value="year">本年</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary"><i class="bi bi-filter"></i> 應用篩選</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 遺囑列表 -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>遺囑ID</th>
+                                        <th>用戶姓名</th>
+                                        <th>創建日期</th>
+                                        <th>最後修改</th>
+                                        <th>狀態</th>
+                                        <th>執行人</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>W20231015001</td>
+                                        <td>張大明</td>
+                                        <td>2023-08-10</td>
+                                        <td>2023-09-05</td>
+                                        <td><span class="status-active">有效</span></td>
+                                        <td>張律師</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info action-btn" title="歷史記錄">
+                                                <i class="bi bi-clock-history"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>W20231014005</td>
+                                        <td>李美麗</td>
+                                        <td>2023-09-15</td>
+                                        <td>2023-10-10</td>
+                                        <td><span class="status-scheduled">預定生效</span></td>
+                                        <td>李律師</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info action-btn" title="歷史記錄">
+                                                <i class="bi bi-clock-history"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>W20230928012</td>
+                                        <td>王國偉</td>
+                                        <td>2023-07-20</td>
+                                        <td>2023-09-25</td>
+                                        <td><span class="status-legacy">已繼承</span></td>
+                                        <td>王律師</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info action-btn" title="歷史記錄">
+                                                <i class="bi bi-clock-history"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success action-btn" title="執行報告">
+                                                <i class="bi bi-file-earmark-text"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>W20231012008</td>
+                                        <td>陳小春</td>
+                                        <td>2023-10-05</td>
+                                        <td>2023-10-12</td>
+                                        <td><span class="status-draft">草稿</span></td>
+                                        <td>-</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info action-btn" title="歷史記錄">
+                                                <i class="bi bi-clock-history"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>W20231010003</td>
+                                        <td>林美華</td>
+                                        <td>2023-09-30</td>
+                                        <td>2023-10-10</td>
+                                        <td><span class="status-locked">鎖定</span></td>
+                                        <td>-</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning action-btn" title="解鎖">
+                                                <i class="bi bi-unlock"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info action-btn" title="歷史記錄">
+                                                <i class="bi bi-clock-history"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 分頁 -->
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mt-4">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">上一頁</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">下一頁</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生命狀態監測 -->
+        <div class="content-section" id="health-monitoring">
+            <div class="container-fluid">
+                <h2 class="mb-4"><i class="bi bi-heart-pulse"></i> 生命狀態監測</h2>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">1,243</div>
+                            <div class="label">監測中用戶</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">高風險用戶</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">17</div>
+                            <div class="label">本週異常</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">5</div>
+                            <div class="label">緊急情況</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 高風險用戶警示 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="card-title mb-0"><i class="bi bi-exclamation-triangle"></i> 高風險用戶警示</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>用戶姓名</th>
+                                                <th>年齡</th>
+                                                <th>風險等級</th>
+                                                <th>最後活動</th>
+                                                <th>健康指標</th>
+                                                <th>建議行動</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="張大明">
+                                                        <div>
+                                                            <div>張大明</div>
+                                                            <small class="text-muted">ID: U10001</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>72</td>
+                                                <td>
+                                                    <span class="user-status-danger">高風險</span>
+                                                    <div class="risk-indicator">
+                                                        <div class="risk-level bg-danger" style="width: 90%"></div>
+                                                    </div>
+                                                </td>
+                                                <td>3天前</td>
+                                                <td>
+                                                    <div>心率: <span class="text-danger">112 bpm</span></div>
+                                                    <div>活動量: <span class="text-warning">極低</span></div>
+                                                </td>
+                                                <td>聯繫家屬，安排健康檢查</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">查看詳情</button>
+                                                    <button class="btn btn-sm btn-outline-warning">聯繫家屬</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="https://via.placeholder.com/40" class="user-avatar me-3" alt="李美麗">
+                                                        <div>
+                                                            <div>李美麗</div>
+                                                            <small class="text-muted">ID: U10002</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>68</td>
+                                                <td>
+                                                    <span class="user-status-warning">中風險</span>
+                                                    <div class="risk-indicator">
+                                                        <div class="risk-level bg-warning" style="width: 65%"></div>
+                                                    </div>
+                                                </td>
+                                                <td>5天前</td>
+                                                <td>
+                                                    <div>血壓: <span class="text-warning">145/92 mmHg</span></div>
+                                                    <div>睡眠: <span class="text-warning">不足</span></div>
+                                                </td>
+                                                <td>建議遠程醫療諮詢</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">查看詳情</button>
+                                                    <button class="btn btn-sm btn-outline-info">安排諮詢</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 健康數據分析 -->
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">用戶健康趨勢分析</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="healthTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">健康指標分佈</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="healthDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 健康監測設備狀態 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">連接設備狀態</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="health-metric">
+                                            <div class="metric-icon">
+                                                <i class="bi bi-smartwatch text-primary"></i>
+                                            </div>
+                                            <div class="metric-info">
+                                                <div class="metric-value">1,043</div>
+                                                <div class="metric-label">智能手錶連接</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="health-metric">
+                                            <div class="metric-icon">
+                                                <i class="bi bi-heart-pulse text-danger"></i>
+                                            </div>
+                                            <div class="metric-info">
+                                                <div class="metric-value">892</div>
+                                                <div class="metric-label">心率監測器</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="health-metric">
+                                            <div class="metric-icon">
+                                                <i class="bi bi-house-door text-success"></i>
+                                            </div>
+                                            <div class="metric-info">
+                                                <div class="metric-value">756</div>
+                                                <div class="metric-label">智能家居設備</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遺囑託管與執行 -->
+        <div class="content-section" id="will-execution">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-shield-check"></i> 遺囑託管與執行</h2>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 新增執行任務
+                    </button>
+                </div>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">127</div>
+                            <div class="label">待執行任務</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">進行中</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">已完成</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">15</div>
+                            <div class="label">本週完成</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 執行任務列表 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">遺囑執行任務</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>任務ID</th>
+                                                <th>遺囑ID</th>
+                                                <th>用戶姓名</th>
+                                                <th>執行狀態</th>
+                                                <th>開始日期</th>
+                                                <th>預計完成</th>
+                                                <th>執行人</th>
+                                                <th>進度</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>T20231015001</td>
+                                                <td>W20231015001</td>
+                                                <td>張大明</td>
+                                                <td><span class="status-progress">進行中</span></td>
+                                                <td>2023-10-01</td>
+                                                <td>2023-11-15</td>
+                                                <td>張律師</td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-info" style="width: 45%"></div>
+                                                    </div>
+                                                    <small>45%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="進度更新">
+                                                        <i class="bi bi-arrow-up-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>T20231014005</td>
+                                                <td>W20231014005</td>
+                                                <td>李美麗</td>
+                                                <td><span class="status-waiting">等待中</span></td>
+                                                <td>2023-10-10</td>
+                                                <td>2023-12-01</td>
+                                                <td>李律師</td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-warning" style="width: 15%"></div>
+                                                    </div>
+                                                    <small>15%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="開始執行">
+                                                        <i class="bi bi-play-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>T20230928012</td>
+                                                <td>W20230928012</td>
+                                                <td>王國偉</td>
+                                                <td><span class="status-completed">已完成</span></td>
+                                                <td>2023-09-25</td>
+                                                <td>2023-10-30</td>
+                                                <td>王律師</td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                                                    </div>
+                                                    <small>100%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="報告">
+                                                        <i class="bi bi-file-earmark-text"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="歸檔">
+                                                        <i class="bi bi-archive"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>T20231012008</td>
+                                                <td>W20231012008</td>
+                                                <td>陳小春</td>
+                                                <td><span class="status-draft">草稿</span></td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-secondary" style="width: 0%"></div>
+                                                    </div>
+                                                    <small>0%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="啟動">
+                                                        <i class="bi bi-play-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 執行時間線 -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">任務 T20231015001 執行時間線</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-01</div>
+                                        <h6>任務啟動</h6>
+                                        <p>遺囑執行任務正式啟動，張律師被指派為執行人。</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-05</div>
+                                        <h6>財產評估開始</h6>
+                                        <p>開始對張大明的財產進行全面評估和估值。</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-12</div>
+                                        <h6>繼承人通知</h6>
+                                        <p>已通知所有遺囑中提到的繼承人。</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-15</div>
+                                        <h6>財產評估完成</h6>
+                                        <p>財產評估階段完成，進入分配規劃階段。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">執行資源分配</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <h6>執行人工作負荷</h6>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-success" style="width: 30%">張律師: 30%</div>
+                                        <div class="progress-bar bg-info" style="width: 45%">李律師: 45%</div>
+                                        <div class="progress-bar bg-warning" style="width: 25%">王律師: 25%</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>任務類型分佈</h6>
+                                    <div class="chart-container">
+                                        <canvas id="taskDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遺產與債務處理 -->
+        <div class="content-section" id="estate-management">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-cash-coin"></i> 遺產與債務處理</h2>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 新增資產記錄
+                    </button>
+                </div>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">總資產價值 (百萬)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">127</div>
+                            <div class="label">待處理案件</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">法律糾紛</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">15</div>
+                            <div class="label">本週新增</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 資產類型分佈 -->
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">資產類型分佈</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="assetDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">資產類型概覽</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="asset-type">
+                                    <div class="asset-icon">
+                                        <i class="bi bi-house-door text-primary"></i>
+                                    </div>
+                                    <div class="asset-info">
+                                        <div class="asset-value">$412M</div>
+                                        <div class="asset-label">不動產</div>
+                                    </div>
+                                </div>
+                                <div class="asset-type">
+                                    <div class="asset-icon">
+                                        <i class="bi bi-bank text-success"></i>
+                                    </div>
+                                    <div class="asset-info">
+                                        <div class="asset-value">$285M</div>
+                                        <div class="asset-label">金融資產</div>
+                                    </div>
+                                </div>
+                                <div class="asset-type">
+                                    <div class="asset-icon">
+                                        <i class="bi bi-gem text-warning"></i>
+                                    </div>
+                                    <div class="asset-info">
+                                        <div class="asset-value">$98M</div>
+                                        <div class="asset-label">貴重物品</div>
+                                    </div>
+                                </div>
+                                <div class="asset-type">
+                                    <div class="asset-icon">
+                                        <i class="bi bi-briefcase text-info"></i>
+                                    </div>
+                                    <div class="asset-info">
+                                        <div class="asset-value">$61M</div>
+                                        <div class="asset-label">商業資產</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 資產處理列表 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">資產處理進度</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>資產ID</th>
+                                                <th>資產名稱</th>
+                                                <th>所有者</th>
+                                                <th>類型</th>
+                                                <th>估值</th>
+                                                <th>狀態</th>
+                                                <th>處理進度</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>A20231015001</td>
+                                                <td>台北市大安區房產</td>
+                                                <td>張大明</td>
+                                                <td>不動產</td>
+                                                <td>$85,000,000</td>
+                                                <td><span class="status-processing">處理中</span></td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-info" style="width: 65%"></div>
+                                                    </div>
+                                                    <small>65%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="進度更新">
+                                                        <i class="bi bi-arrow-up-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>A20231014005</td>
+                                                <td>台積電股票投資組合</td>
+                                                <td>李美麗</td>
+                                                <td>金融資產</td>
+                                                <td>$42,500,000</td>
+                                                <td><span class="status-pending">待處理</span></td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-warning" style="width: 15%"></div>
+                                                    </div>
+                                                    <small>15%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="開始處理">
+                                                        <i class="bi bi-play-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>A20230928012</td>
+                                                <td>古董珠寶收藏</td>
+                                                <td>王國偉</td>
+                                                <td>貴重物品</td>
+                                                <td>$12,000,000</td>
+                                                <td><span class="status-completed">已完成</span></td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                                                    </div>
+                                                    <small>100%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="報告">
+                                                        <i class="bi bi-file-earmark-text"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="歸檔">
+                                                        <i class="bi bi-archive"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>A20231012008</td>
+                                                <td>家族企業股份</td>
+                                                <td>陳小春</td>
+                                                <td>商業資產</td>
+                                                <td>$35,000,000</td>
+                                                <td><span class="status-legal">法律程序中</span></td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-bar bg-primary" style="width: 40%"></div>
+                                                    </div>
+                                                    <small>40%</small>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="法律文件">
+                                                        <i class="bi bi-folder"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 葬禮管理 -->
+        <div class="content-section" id="funeral-management">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-flower1"></i> 葬禮管理</h2>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 新增葬禮安排
+                    </button>
+                </div>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">進行中葬禮</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">127</div>
+                            <div class="label">已完成葬禮</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">15</div>
+                            <div class="label">本週安排</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">5</div>
+                            <div class="label">待確認</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 葬禮列表 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">葬禮安排列表</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>葬禮ID</th>
+                                                <th>用戶姓名</th>
+                                                <th>日期</th>
+                                                <th>地點</th>
+                                                <th>類型</th>
+                                                <th>狀態</th>
+                                                <th>負責人</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>F20231015001</td>
+                                                <td>張大明</td>
+                                                <td>2023-10-20</td>
+                                                <td>台北市立殯儀館</td>
+                                                <td>傳統葬禮</td>
+                                                <td><span class="status-planning">規劃中</span></td>
+                                                <td>陳經理</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="進度更新">
+                                                        <i class="bi bi-arrow-up-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>F20231014005</td>
+                                                <td>李美麗</td>
+                                                <td>2023-10-25</td>
+                                                <td>新北市生命紀念館</td>
+                                                <td>環保葬禮</td>
+                                                <td><span class="status-arranging">安排中</span></td>
+                                                <td>林專員</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="確認安排">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>F20230928012</td>
+                                                <td>王國偉</td>
+                                                <td>2023-09-30</td>
+                                                <td>台中市追思園</td>
+                                                <td>樹葬</td>
+                                                <td><span class="status-completed">已完成</span></td>
+                                                <td>王經理</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="報告">
+                                                        <i class="bi bi-file-earmark-text"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="歸檔">
+                                                        <i class="bi bi-archive"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>F20231012008</td>
+                                                <td>陳小春</td>
+                                                <td>2023-11-05</td>
+                                                <td>高雄市紀念公園</td>
+                                                <td>海葬</td>
+                                                <td><span class="status-ongoing">進行中</span></td>
+                                                <td>吳專員</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-warning action-btn" title="更新進度">
+                                                        <i class="bi bi-arrow-up-circle"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 葬禮服務提供者 -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">合作服務提供商</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="service-item">
+                                    <div class="service-icon">
+                                        <i class="bi bi-flower1"></i>
+                                    </div>
+                                    <div class="service-details">
+                                        <div class="service-name">永恆花園殯儀服務</div>
+                                        <div class="service-status">合作中 • 評分: 4.8/5</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary">查看詳情</button>
+                                </div>
+                                <div class="service-item">
+                                    <div class="service-icon">
+                                        <i class="bi bi-tree"></i>
+                                    </div>
+                                    <div class="service-details">
+                                        <div class="service-name">綠色生命環保葬禮</div>
+                                        <div class="service-status">合作中 • 評分: 4.6/5</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary">查看詳情</button>
+                                </div>
+                                <div class="service-item">
+                                    <div class="service-icon">
+                                        <i class="bi bi-water"></i>
+                                    </div>
+                                    <div class="service-details">
+                                        <div class="service-name">海洋追思海葬服務</div>
+                                        <div class="service-status">合作中 • 評分: 4.7/5</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary">查看詳情</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">近期葬禮活動</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-15</div>
+                                        <h6>張大明葬禮規劃會議</h6>
+                                        <p>與家屬討論葬禮細節和安排。</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-10</div>
+                                        <h6>李美麗環保葬禮確認</h6>
+                                        <p>確認使用環保材料進行樹葬儀式。</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">2023-10-05</div>
+                                        <h6>王國偉追思會完成</h6>
+                                        <p>成功舉辦追思會，家屬表示滿意。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 時光膠囊管理 -->
+        <div class="content-section" id="time-capsule">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-cloud"></i> 時光膠囊管理</h2>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 新增時光膠囊
+                    </button>
+                </div>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">2,156</div>
+                            <div class="label">總膠囊數量</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">已激活</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">本週新增</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">15</div>
+                            <div class="label">待審核</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 時光膠囊列表 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">時光膠囊列表</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>膠囊ID</th>
+                                                <th>用戶姓名</th>
+                                                <th>創建日期</th>
+                                                <th>開啟條件</th>
+                                                <th>內容類型</th>
+                                                <th>狀態</th>
+                                                <th>存取權限</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>C20231015001</td>
+                                                <td>張大明</td>
+                                                <td>2023-08-10</td>
+                                                <td>用戶去世後</td>
+                                                <td>影片、照片</td>
+                                                <td><span class="status-active">有效</span></td>
+                                                <td><span class="badge bg-primary access-badge">家屬</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="內容管理">
+                                                        <i class="bi bi-folder"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>C20231014005</td>
+                                                <td>李美麗</td>
+                                                <td>2023-09-15</td>
+                                                <td>特定日期: 2025-12-25</td>
+                                                <td>信件、音頻</td>
+                                                <td><span class="status-scheduled">預定</span></td>
+                                                <td><span class="badge bg-success access-badge">指定繼承人</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="內容管理">
+                                                        <i class="bi bi-folder"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>C20230928012</td>
+                                                <td>王國偉</td>
+                                                <td>2023-07-20</td>
+                                                <td>已開啟</td>
+                                                <td>影片、文件</td>
+                                                <td><span class="status-legacy">已繼承</span></td>
+                                                <td><span class="badge bg-warning access-badge">已存取</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn" title="存取記錄">
+                                                        <i class="bi bi-clock-history"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-success action-btn" title="歸檔">
+                                                        <i class="bi bi-archive"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>C20231012008</td>
+                                                <td>陳小春</td>
+                                                <td>2023-10-05</td>
+                                                <td>子女年滿18歲</td>
+                                                <td>照片、信件</td>
+                                                <td><span class="status-locked">鎖定</span></td>
+                                                <td><span class="badge bg-info access-badge">子女</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn" title="查看">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary action-btn" title="編輯">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-warning action-btn" title="解鎖">
+                                                        <i class="bi bi-unlock"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 時光膠囊內容預覽 -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">膠囊 C20231015001 內容預覽</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6>給親愛的家人的話</h6>
+                                <p class="text-muted">這是一封充滿愛與回憶的信件，記錄了用戶對家人的深情告白...</p>
+                                
+                                <div class="media-grid">
+                                    <div class="media-item">
+                                        <img src="https://via.placeholder.com/120" alt="記憶照片">
+                                    </div>
+                                    <div class="media-item">
+                                        <img src="https://via.placeholder.com/120" alt="記憶照片">
+                                        <div class="play-btn">
+                                            <i class="bi bi-play-circle-fill"></i>
+                                        </div>
+                                    </div>
+                                    <div class="media-item">
+                                        <img src="https://via.placeholder.com/120" alt="記憶照片">
+                                    </div>
+                                    <div class="media-item">
+                                        <img src="https://via.placeholder.com/120" alt="記憶照片">
+                                        <div class="play-btn">
+                                            <i class="bi bi-play-circle-fill"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <small class="text-muted">創建於: 2023-08-10 | 最後修改: 2023-09-05</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">存取記錄</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="memory-timeline">
+                                    <div class="memory-item">
+                                        <div class="memory-date">2023-08-10</div>
+                                        <h6>膠囊創建</h6>
+                                        <p>用戶創建了時光膠囊，添加了4個媒體文件。</p>
+                                    </div>
+                                    <div class="memory-item">
+                                        <div class="memory-date">2023-09-05</div>
+                                        <h6>內容更新</h6>
+                                        <p>用戶添加了2個新的影片文件。</p>
+                                    </div>
+                                    <div class="memory-item">
+                                        <div class="memory-date">2023-10-01</div>
+                                        <h6>權限設定</h6>
+                                        <p>用戶設定了家屬存取權限。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 數據分析 -->
+        <div class="content-section" id="data-analysis">
+            <div class="container-fluid">
+                <h2 class="mb-4"><i class="bi bi-graph-up"></i> 數據分析</h2>
+                
+                <!-- 統計卡片 -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">1,243</div>
+                            <div class="label">總用戶數</div>
+                            <div class="trend-indicator trend-up">+5.2%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">856</div>
+                            <div class="label">活躍用戶</div>
+                            <div class="trend-indicator trend-up">+3.7%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">42</div>
+                            <div class="label">高風險用戶</div>
+                            <div class="trend-indicator trend-down">-2.1%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="number">78%</div>
+                            <div class="label">用戶滿意度</div>
+                            <div class="trend-indicator trend-up">+4.5%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 數據圖表 -->
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">用戶增長趨勢</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="userGrowthChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">服務使用分佈</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="serviceUsageChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 關鍵績效指標 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">關鍵績效指標 (KPI)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>指標</th>
+                                                <th>當前值</th>
+                                                <th>目標值</th>
+                                                <th>完成度</th>
+                                                <th>趨勢</th>
+                                                <th>狀態</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>用戶留存率</td>
+                                                <td>78%</td>
+                                                <td>85%</td>
+                                                <td>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-success" style="width: 78%"></div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="trend-indicator trend-up">+5%</span></td>
+                                                <td><span class="badge bg-warning kpi-badge">進行中</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>遺囑完成率</td>
+                                                <td>65%</td>
+                                                <td>75%</td>
+                                                <td>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-info" style="width: 65%"></div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="trend-indicator trend-up">+8%</span></td>
+                                                <td><span class="badge bg-warning kpi-badge">進行中</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>用戶滿意度</td>
+                                                <td>82%</td>
+                                                <td>90%</td>
+                                                <td>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-primary" style="width: 82%"></div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="trend-indicator trend-up">+3%</span></td>
+                                                <td><span class="badge bg-success kpi-badge">達標</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>服務回應時間</td>
+                                                <td>2.3小時</td>
+                                                <td>2.0小時</td>
+                                                <td>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-danger" style="width: 85%"></div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="trend-indicator trend-down">-0.5小時</span></td>
+                                                <td><span class="badge bg-danger kpi-badge">需改進</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 數據洞察 -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">數據洞察</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="insight-card">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-lightbulb insight-icon"></i>
+                                        <div>
+                                            <h6>用戶年齡分佈變化</h6>
+                                            <p class="mb-0">50-60歲用戶群增長最快，較上月增加12%。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="insight-card">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-graph-up-arrow insight-icon"></i>
+                                        <div>
+                                            <h6>時光膠囊使用率上升</h6>
+                                            <p class="mb-0">過去三個月使用時光膠囊功能的用戶增加25%。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="insight-card">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-exclamation-triangle insight-icon"></i>
+                                        <div>
+                                            <h6>高風險用戶關注</h6>
+                                            <p class="mb-0">70歲以上用戶中，15%被標記為高風險，需要特別關注。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">預測分析</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="forecastChart"></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="text-muted">根據當前趨勢預測，未來六個月用戶增長率將保持在5-7%之間。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系統設定 -->
+        <div class="content-section" id="system-settings">
+            <div class="container-fluid">
+                <h2 class="mb-4"><i class="bi bi-gear"></i> 系統設定</h2>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card settings-card">
+                            <div class="settings-section">
+                                <div class="settings-header">
+                                    <div class="settings-icon">
+                                        <i class="bi bi-shield-check"></i>
+                                    </div>
+                                    <div>
+                                        <h5>安全性設定</h5>
+                                        <p class="text-muted mb-0">管理系統安全性和存取控制</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="system-status status-online">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span>系統安全性: 正常</span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">密碼政策</label>
+                                    <select class="form-select">
+                                        <option>標準 (8字符，包含數字)</option>
+                                        <option>中等 (10字符，包含數字和特殊字符)</option>
+                                        <option>嚴格 (12字符，包含數字、大小寫和特殊字符)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">兩步驟驗證</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="twoFactorSwitch" checked>
+                                        <label class="form-check-label" for="twoFactorSwitch">啟用兩步驟驗證</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">工作階段超時</label>
+                                    <select class="form-select">
+                                        <option>15分鐘</option>
+                                        <option>30分鐘</option>
+                                        <option selected>1小時</option>
+                                        <option>2小時</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="btn btn-primary w-100">儲存安全性設定</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card settings-card">
+                            <div class="settings-section">
+                                <div class="settings-header">
+                                    <div class="settings-icon">
+                                        <i class="bi bi-bell"></i>
+                                    </div>
+                                    <div>
+                                        <h5>通知設定</h5>
+                                        <p class="text-muted mb-0">管理系統通知和警報</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">電子郵件通知</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emailAlerts" checked>
+                                        <label class="form-check-label" for="emailAlerts">高風險用戶警報</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emailUpdates" checked>
+                                        <label class="form-check-label" for="emailUpdates">系統更新通知</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emailReports">
+                                        <label class="form-check-label" for="emailReports">每週報告</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">推播通知</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                                        <label class="form-check-label" for="pushNotifications">啟用推播通知</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">通知頻率</label>
+                                    <select class="form-select">
+                                        <option>即時</option>
+                                        <option selected>每小時摘要</option>
+                                        <option>每日摘要</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="btn btn-primary w-100">儲存通知設定</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card settings-card">
+                            <div class="settings-section">
+                                <div class="settings-header">
+                                    <div class="settings-icon">
+                                        <i class="bi bi-database"></i>
+                                    </div>
+                                    <div>
+                                        <h5>數據管理</h5>
+                                        <p class="text-muted mb-0">備份、還原和資料保留設定</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="system-status status-online">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span>最後備份: 2023-10-15 02:00</span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">自動備份頻率</label>
+                                    <select class="form-select">
+                                        <option>每日</option>
+                                        <option selected>每週</option>
+                                        <option>每月</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">資料保留政策</label>
+                                    <select class="form-select">
+                                        <option>1年</option>
+                                        <option selected>3年</option>
+                                        <option>5年</option>
+                                        <option>永久</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">備份位置</label>
+                                    <select class="form-select">
+                                        <option>本地伺服器</option>
+                                        <option selected>雲端儲存</option>
+                                        <option>混合模式</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary">立即備份</button>
+                                    <button class="btn btn-outline-secondary">還原數據</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系統狀態和日誌 -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">系統狀態</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="system-status status-online">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span>主要伺服器: 正常運作</span>
+                                    <span class="api-status api-active">在線</span>
+                                </div>
+                                <div class="system-status status-online">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span>資料庫: 正常運作</span>
+                                    <span class="api-status api-active">在線</span>
+                                </div>
+                                <div class="system-status status-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <span>備份伺服器: 輕微延遲</span>
+                                    <span class="api-status api-active">在線</span>
+                                </div>
+                                <div class="system-status status-online">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span>API服務: 正常運作</span>
+                                    <span class="api-status api-active">在線</span>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>系統資源使用率</h6>
+                                    <div class="mb-2">
+                                        <small>CPU使用率: 45%</small>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success" style="width: 45%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small>記憶體使用率: 62%</small>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" style="width: 62%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <small>儲存空間: 78%</small>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-info" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">系統日誌</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="log-entry">
+                                    <div class="d-flex justify-content-between">
+                                        <span>系統備份完成</span>
+                                        <span class="log-time">2023-10-15 02:00</span>
+                                    </div>
+                                    <small class="text-muted">備份檔案大小: 2.3GB</small>
+                                </div>
+                                <div class="log-entry">
+                                    <div class="d-flex justify-content-between">
+                                        <span>安全性掃描完成</span>
+                                        <span class="log-time">2023-10-15 01:30</span>
+                                    </div>
+                                    <small class="text-muted">未發現威脅</small>
+                                </div>
+                                <div class="log-entry">
+                                    <div class="d-flex justify-content-between">
+                                        <span>資料庫優化</span>
+                                        <span class="log-time">2023-10-14 23:45</span>
+                                    </div>
+                                    <small class="text-muted">釋放 150MB 空間</small>
+                                </div>
+                                <div class="log-entry">
+                                    <div class="d-flex justify-content-between">
+                                        <span>系統更新完成</span>
+                                        <span class="log-time">2023-10-14 22:00</span>
+                                    </div>
+                                    <small class="text-muted">版本: 2.1.3 → 2.1.4</small>
+                                </div>
+                                <div class="log-entry">
+                                    <div class="d-flex justify-content-between">
+                                        <span>用戶資料同步</span>
+                                        <span class="log-time">2023-10-14 21:15</span>
+                                    </div>
+                                    <small class="text-muted">同步 1,243 筆用戶資料</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加用戶模態框 -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">新增用戶</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userName" class="form-label">姓名</label>
+                                    <input type="text" class="form-control" id="userName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userAge" class="form-label">年齡</label>
+                                    <input type="number" class="form-control" id="userAge" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userPhone" class="form-label">電話</label>
+                                    <input type="tel" class="form-control" id="userPhone" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userEmail" class="form-label">電子郵件</label>
+                                    <input type="email" class="form-control" id="userEmail" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userAddress" class="form-label">地址</label>
+                            <input type="text" class="form-control" id="userAddress">
+                        </div>
+                        <div class="mb-3">
+                            <label for="userStatus" class="form-label">初始狀態</label>
+                            <select class="form-select" id="userStatus">
+                                <option value="active">活躍</option>
+                                <option value="inactive">不活躍</option>
+                                <option value="highRisk">高風險</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary">新增用戶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 側邊欄導航功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 側邊欄切換（移動設備）
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            // 導航連結點擊事件
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有活動狀態
+                    navLinks.forEach(navLink => navLink.classList.remove('active'));
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    
+                    // 添加當前活動狀態
+                    this.classList.add('active');
+                    const targetId = this.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                    
+                    // 在移動設備上點擊後隱藏側邊欄
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                    }
+                });
+            });
+            
+            // 初始化圖表
+            initializeCharts();
+        });
+        
+        // 初始化圖表
+        function initializeCharts() {
+            // 健康趨勢圖
+            const healthTrendCtx = document.getElementById('healthTrendChart').getContext('2d');
+            new Chart(healthTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月'],
+                    datasets: [{
+                        label: '平均心率',
+                        data: [72, 74, 73, 75, 76, 78, 77, 79, 80, 82],
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.3
+                    }, {
+                        label: '平均血壓(收縮)',
+                        data: [125, 128, 126, 130, 132, 135, 133, 136, 138, 140],
+                        borderColor: '#4a6fa5',
+                        backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+            
+            // 健康分佈圖
+            const healthDistributionCtx = document.getElementById('healthDistributionChart').getContext('2d');
+            new Chart(healthDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['正常', '需關注', '高風險', '緊急'],
+                    datasets: [{
+                        data: [65, 20, 10, 5],
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#fd7e14',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // 任務分佈圖
+            const taskDistributionCtx = document.getElementById('taskDistributionChart').getContext('2d');
+            new Chart(taskDistributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['財產評估', '法律程序', '資產分配', '文件歸檔'],
+                    datasets: [{
+                        data: [35, 25, 30, 10],
+                        backgroundColor: [
+                            '#4a6fa5',
+                            '#8a9a5b',
+                            '#d4a574',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // 資產分佈圖
+            const assetDistributionCtx = document.getElementById('assetDistributionChart').getContext('2d');
+            new Chart(assetDistributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['不動產', '金融資產', '貴重物品', '商業資產', '其他'],
+                    datasets: [{
+                        label: '資產價值 (百萬)',
+                        data: [412, 285, 98, 61, 45],
+                        backgroundColor: [
+                            '#4a6fa5',
+                            '#28a745',
+                            '#ffc107',
+                            '#17a2b8',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // 用戶增長圖
+            const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+            new Chart(userGrowthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月'],
+                    datasets: [{
+                        label: '總用戶數',
+                        data: [800, 850, 920, 980, 1050, 1120, 1180, 1230, 1280, 1340],
+                        borderColor: '#4a6fa5',
+                        backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '新增用戶',
+                        data: [50, 70, 60, 70, 80, 70, 60, 50, 50, 60],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // 服務使用分佈圖
+            const serviceUsageCtx = document.getElementById('serviceUsageChart').getContext('2d');
+            new Chart(serviceUsageCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['遺囑管理', '生命監測', '時光膠囊', '葬禮規劃', '其他'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            '#4a6fa5',
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // 預測分析圖
+            const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+            new Chart(forecastCtx, {
+                type: 'line',
+                data: {
+                    labels: ['10月', '11月', '12月', '1月', '2月', '3月'],
+                    datasets: [{
+                        label: '實際用戶數',
+                        data: [1340, null, null, null, null, null],
+                        borderColor: '#4a6fa5',
+                        backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                        tension: 0.3
+                    }, {
+                        label: '預測用戶數',
+                        data: [1340, 1410, 1480, 1550, 1630, 1710],
+                        borderColor: '#28a745',
+                        borderDash: [5, 5],
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 視窗大小改變時調整側邊欄
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
